@@ -1,5 +1,6 @@
 import streamlit as st
 from supabase import create_client, Client
+from pages.log import log_action
 
 # Supabase setup
 SUPABASE_URL = "https://mhxrmrvruifwcdxrlvpy.supabase.co"
@@ -43,19 +44,14 @@ if not st.session_state.user:
             st.session_state.jwt = user.session.access_token  # Save JWT token
             st.success("✅ Logged in successfully!")
 
+            log_action(user.user.id, "login", {"email": user.user.email})
 
             st.switch_page("pages/Dashboard.py")
 else:
     st.success(f"Welcome {st.session_state.user.user.email}")
-    
 
     if st.button("Logout"):
+        log_action(st.session_state.user.user.id, "logout", {"email": st.session_state.user.user.email})
         logout()
         st.rerun()
-
-    # # --- Example: Use JWT to fetch from your custom table ---
-    # # --- Example: fetch user details securely ---
-    # data = supabase.table("Userdetails").select("*").eq("Email", st.session_state.user.user.email).execute()
-    # st.subheader("📊 Dashboard")
-    # st.write(data.data)
 
