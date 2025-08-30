@@ -17,12 +17,13 @@ def log_action(user_id: str, action: str, details: dict = None, email: str = Non
     if details is None:
         details = {}
 
-    # ✅ always extract email from session user object
-    if email is None:
-        try:
-            email = st.session_state.user.email   # correct way
-        except Exception:
-            email = None
+    # ✅ Always pull email from session
+    email = None
+    try:
+        if "user" in st.session_state and st.session_state.user:
+            email = st.session_state.user.user.email
+    except Exception:
+        pass
 
     try:
         supabase.table("logs").insert({
@@ -33,6 +34,15 @@ def log_action(user_id: str, action: str, details: dict = None, email: str = Non
         }).execute()
     except Exception as e:
         st.error(f"⚠️ Failed to log action: {e}")
+
+def fetch_logs():
+    """Fetch all logs from Supabase"""
+    try:
+        logs = supabase.table("logs").select("*").order("created_at", desc=True).execute()
+        return logs.data
+    except Exception as e:
+        st.error(f"⚠️ Failed to fetch logs: {e}")
+        return []
 
 # --- UI: Display Logs ---
 st.title("📜 User Activity Logs")
