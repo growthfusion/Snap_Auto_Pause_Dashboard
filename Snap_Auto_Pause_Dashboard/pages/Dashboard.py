@@ -1,5 +1,6 @@
 import streamlit as st
 import requests
+from pages.log import log_action
 
 API_BASE_URL = "https://gfcomp.pro"
 
@@ -39,12 +40,12 @@ if st.button("Apply Auto Pause"):
             st.success(f"✅ Auto Pause set to {auto_pause_toggle}")
             st.session_state["auto_pause"] = auto_pause_toggle
 
-            # 🔹 Log event
-            # log_action(
-            #     st.session_state.user.user.id,
-            #     "toggle_auto_pause",
-            #     {"new_value": auto_pause_toggle}
-            # )
+            # Log event
+            log_action(
+                st.session_state.user.user.id,
+                "toggle_auto_pause",
+                {"toggle_value": auto_pause_toggle}
+            )
         else:
             st.error(f"❌ API Error: {resp.text}")
     except Exception as e:
@@ -67,12 +68,12 @@ if st.button("Submit"):
             st.session_state["global_profit_loss"] = -abs(profit_loss_value)
             st.success(f"✅ Updated Active Campaign Profit Value to {-abs(profit_loss_value)}")
 
-            # 🔹 Log event
-            # log_action(
-            #     st.session_state.user.user.id,
-            #     "update_global_threshold",
-            #     {"Overall_value": -abs(profit_loss_value)}
-            # )
+            # Log event
+            log_action(
+                st.session_state.user.user.id,
+                "update_global_threshold",
+                {"Overall_value": -abs(profit_loss_value)}
+            )
         else:
             st.error(f"❌ API Error: {resp.text}")
     except Exception as e:
@@ -104,12 +105,12 @@ if st.button("Add Campaign Condition"):
                         {"id": k, "value": v} for k, v in campaigns.items()
                     ]
 
-                    # 🔹 Log event
-                    # log_action(
-                    #     st.session_state.user.user.id,
-                    #     "add_campaign",
-                    #     {"campaign": campaign_id, "value": -abs(camp_value)}
-                    # )
+                    # Log event
+                    log_action(
+                        st.session_state.user.user.id,
+                        "add_campaign",
+                        {"campaign": campaign_id, "value": -abs(camp_value)}
+                    )
         except Exception as e:
             st.error(f"❌ Request failed: {e}")
     st.rerun()
@@ -145,12 +146,12 @@ else:
                                 {"id": k, "value": v} for k, v in campaigns.items()
                             ]
 
-                            # 🔹 Log event
-                            # log_action(
-                            #     st.session_state.user.user.id,
-                            #     "delete_campaign",
-                            #     {"campaign": removed["id"]}
-                            # )
+                            # Log event
+                            log_action(
+                                st.session_state.user.user.id,
+                                "delete_campaign",
+                                {"campaign": removed["id"]}
+                            )
                 except Exception as e:
                     st.error(f"❌ Request failed: {e}")
                 st.rerun()

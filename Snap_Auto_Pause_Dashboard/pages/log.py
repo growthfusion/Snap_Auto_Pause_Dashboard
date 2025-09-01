@@ -16,7 +16,7 @@ def log_action(user_id: str, action: str, details: dict = None, email: str = Non
     if details is None:
         details = {}
 
-    # ✅ Always pull email from session
+    # Always pull email from session
     email = None
     try:
         if "user" in st.session_state and st.session_state.user:
