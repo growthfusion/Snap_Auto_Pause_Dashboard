@@ -43,7 +43,7 @@ if not st.session_state.user:
             st.session_state.jwt = user.session.access_token  # Save JWT token
             st.success("✅ Logged in successfully!")
 
-            st.switch_page("../pages/Dashboard.py")
+            st.switch_page("pages/Dashboard.py")
 else:
     st.success(f"Welcome {st.session_state.user.user.email}")
 

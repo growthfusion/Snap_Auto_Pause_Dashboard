@@ -6,9 +6,6 @@ SUPABASE_URL = "https://mhxrmrvruifwcdxrlvpy.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1oeHJtcnZydWlmd2NkeHJsdnB5Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NjQ1NTEyMSwiZXhwIjoyMDcyMDMxMTIxfQ.bfQ44c2J6zwAEChRVO_zhh6xcgvm8r7BSkFZOACykZo"
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# --- Check login ---
-import streamlit as st
-
 # Redirect if not logged in
 if "user" not in st.session_state or st.session_state.user is None:
     st.switch_page("Login.py")
