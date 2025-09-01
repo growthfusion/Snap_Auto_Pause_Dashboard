@@ -1,13 +1,15 @@
 import streamlit as st
 import requests
-from pages.log import log_action
+from pages.Log import log_action
 
 
 API_BASE_URL = "https://gfcomp.pro"
 
+import streamlit as st
+
+# Redirect if not logged in
 if "user" not in st.session_state or st.session_state.user is None:
-    st.error("❌ Please login first from the Login page.")
-    st.stop()
+    st.switch_page("Login.py")
 
 st.set_page_config(page_title="Snap Campaign Control", layout="wide")
 st.title("Snap Auto Pause Dashboard")

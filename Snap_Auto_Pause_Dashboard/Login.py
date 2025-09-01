@@ -1,6 +1,6 @@
 import streamlit as st
 from supabase import create_client, Client
-from pages.log import log_action
+from pages.Log import log_action
 
 # Supabase setup
 SUPABASE_URL = "https://mhxrmrvruifwcdxrlvpy.supabase.co"
@@ -43,8 +43,6 @@ if not st.session_state.user:
             st.session_state.user = user
             st.session_state.jwt = user.session.access_token  # Save JWT token
             st.success("✅ Logged in successfully!")
-
-            log_action(user.user.id, "login", {"email": user.user.email})
 
             st.switch_page("pages/Dashboard.py")
 else:

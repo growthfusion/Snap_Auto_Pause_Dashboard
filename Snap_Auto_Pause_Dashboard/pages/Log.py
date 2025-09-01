@@ -7,9 +7,11 @@ SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 # --- Check login ---
+import streamlit as st
+
+# Redirect if not logged in
 if "user" not in st.session_state or st.session_state.user is None:
-    st.error("❌ Please login first from the Login page.")
-    st.stop()
+    st.switch_page("Login.py")
 
 # --- Function to log actions ---
 def log_action(user_id: str, action: str, details: dict = None, email: str = None):
