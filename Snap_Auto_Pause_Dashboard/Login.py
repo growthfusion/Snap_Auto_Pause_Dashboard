@@ -1,6 +1,6 @@
 import streamlit as st
 from supabase import create_client, Client
-from pages.Log import log_action
+from pages.log import log_action
 
 # Supabase setup
 SUPABASE_URL = "https://mhxrmrvruifwcdxrlvpy.supabase.co"

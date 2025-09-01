@@ -1,6 +1,6 @@
 import streamlit as st
 import requests
-from pages.Log import log_action
+from pages.log import log_action
 
 
 API_BASE_URL = "https://gfcomp.pro"
