@@ -1,6 +1,5 @@
 import streamlit as st
 from supabase import create_client, Client
-from pages.log import log_action
 
 # Supabase setup
 SUPABASE_URL = "https://mhxrmrvruifwcdxrlvpy.supabase.co"
@@ -49,7 +48,6 @@ else:
     st.success(f"Welcome {st.session_state.user.user.email}")
 
     if st.button("Logout"):
-        log_action(st.session_state.user.user.id, "logout", {"email": st.session_state.user.user.email})
         logout()
         st.rerun()
 
