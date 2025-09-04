@@ -12,7 +12,7 @@ st.set_page_config(page_title="Meta Campaign Control", layout="wide")
 st.title("Meta Auto Pause Dashboard")
 
 # --- Initialize session ---
-if "config_fetched" not in st.session_state or not st.session_state.config_fetched:
+if "meta_config_fetched" not in st.session_state or not st.session_state.meta_config_fetched:
     try:
         resp = requests.get(f"{API_BASE_URL}/config?platform=meta")
         if resp.status_code == 200:
@@ -66,7 +66,7 @@ if st.button("Submit"):
         payload = {"active": True, "alert_profit_threshold": -abs(profit_loss_value)}
         resp = requests.post(f"{API_BASE_URL}/config?platform=meta", json=payload)
         if resp.status_code == 200:
-            st.session_state["global_profit_loss"] = -abs(profit_loss_value)
+            st.session_state["meta_global_profit_loss"] = -abs(profit_loss_value)
             st.success(f"✅ Updated Active Campaign Profit Value to {-abs(profit_loss_value)}")
             # Log event
             log_action(
@@ -129,7 +129,7 @@ else:
                     resp = requests.delete(f"{API_BASE_URL}/config/campaigns?platform=meta", json=payload)
                     if resp.status_code == 200:
                         updated_config = resp.json()
-                        st.session_state["campaign_conditions"] = [
+                        st.session_state["meta_campaign_conditions"] = [
                             {"id": k, "value": v} for k, v in updated_config.get("campaign_loss_thresholds", {}).items()
                         ]
                         st.success(f"🗑️ Deleted `{camp['id']}`")
