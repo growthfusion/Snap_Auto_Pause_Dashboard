@@ -23,12 +23,106 @@ if "config_fetched" not in st.session_state or not st.session_state.config_fetch
             st.session_state["campaign_conditions"] = [
                 {"id": k, "value": v} for k, v in campaigns.items()
             ]
+            st.session_state["ad_accounts_snap"] = snap_config.get("ad_accounts", {})
             st.session_state["config_fetched"] = True
     except Exception as e:
         st.error(f"❌ Request failed: {e}")
 
+# --- Section 1: Manage Ad Accounts ---
+st.subheader("📂 Snap Ad Accounts")
+
+# Fetch ad accounts initially if not in session
+if "ad_accounts_snap" not in st.session_state:
+    try:
+        headers = {"Content-Type": "application/json"}  # Ensure correct content type
+        resp = requests.get(f"{API_BASE_URL}/config/adaccounts?platform=snap", headers=headers)
+        if resp.status_code == 200:
+            st.session_state["ad_accounts_snap"] = resp.json().get("ad_accounts", {})
+        else:
+            st.error(f"❌ Failed to fetch ad accounts: {resp.text}")
+            st.session_state["ad_accounts_snap"] = {}
+    except Exception as e:
+        st.error(f"❌ Request failed: {e}")
+        st.session_state["ad_accounts_snap"] = {}
+
+# ---- Add New Ad Account ----
+with st.expander("➕ Add New Ad Account", expanded=False):
+    ad_account_name = st.text_input("Enter Ad Account Name", key="new_ad_name")
+    ad_account_id = st.text_input("Enter Ad Account ID", key="new_ad_id")
+    if st.button("Add Ad Account"):
+        if not ad_account_name.strip() or not ad_account_id.strip():
+            st.warning("⚠️ Please provide both ad account name and ID.")
+        else:
+            try:
+                payload = {
+                    "ad_account_name": ad_account_name.strip(),
+                    "ad_account_id": ad_account_id.strip()
+                }
+                resp = requests.post(
+                    f"{API_BASE_URL}/config/adaccounts?platform=snap",
+                    json=payload,
+                    headers={"Content-Type": "application/json"}
+                )
+                if resp.status_code == 200:
+                    updated_config = resp.json()
+                    st.session_state["ad_accounts_snap"] = updated_config.get("ad_accounts", {})
+                    st.success(f"✅ Ad Account `{ad_account_name}` added successfully.")
+                    # Log the action
+                    log_action(
+                        st.session_state.user.user.id,
+                        "Snap_add_ad_account",
+                        {"ad_account_name": ad_account_name}
+                    )
+                else:
+                    st.error(f"❌ API Error: {resp.text}")
+            except Exception as e:
+                st.error(f"❌ Request failed: {e}")
+            st.rerun()  # Refresh to update list
+
+# ---- Delete Ad Account ----
+with st.expander("❌ Delete Ad Account", expanded=False):
+    ad_account_to_delete = st.selectbox(
+        "Select Ad Account to Delete",
+        options=list(st.session_state.get("ad_accounts_snap", {}).keys()),
+        key="delete_ad_account_select"
+    )
+    if st.button("Delete Ad Account"):
+        if not ad_account_to_delete:
+            st.warning("⚠️ Please select an ad account to delete.")
+        else:
+            try:
+                payload = {"ad_account_name": ad_account_to_delete}
+                resp = requests.delete(
+                    f"{API_BASE_URL}/config/adaccounts?platform=snap",
+                    json=payload,
+                    headers={"Content-Type": "application/json"}
+                )
+                if resp.status_code == 200:
+                    updated_config = resp.json()
+                    st.session_state["ad_accounts_snap"] = updated_config.get("ad_accounts", {})
+                    st.success(f"✅ Ad Account `{ad_account_to_delete}` deleted successfully.")
+                    # Log the action
+                    log_action(
+                        st.session_state.user.user.id,
+                        "snap_delete_ad_account",
+                        {"ad_account_name": ad_account_to_delete}
+                    )
+                else:
+                    st.error(f"❌ API Error: {resp.text}")
+            except Exception as e:
+                st.error(f"❌ Request failed: {e}")
+            st.rerun()  # Refresh to update list
+
+# ---- Display Current Ad Accounts ----
+st.subheader("Current Snap Ad Accounts")
+if st.session_state.get("ad_accounts_snap"):
+    for name, ad_id in st.session_state["ad_accounts_snap"].items():
+        st.write(f"**{name}** : `{ad_id}`")
+else:
+    st.info("No ad accounts found.")
+
 # --------------------------------
-# Section 1: Snap Auto Pause
+# Section 2: Snap Auto Pause
 # --------------------------------
 st.subheader("⚡ Snap Auto Pause")
 auto_pause_toggle = st.toggle("Enable Auto Pause", value=st.session_state["auto_pause"])
@@ -42,7 +136,7 @@ if st.button("Apply Auto Pause"):
             # Log event
             log_action(
                 st.session_state.user.user.id,
-                "toggle_auto_pause",
+                "Snap_toggle_auto_pause",
                 {"toggle_value": auto_pause_toggle}
             )
         else:
@@ -52,7 +146,7 @@ if st.button("Apply Auto Pause"):
     st.rerun()
 
 # --------------------------------
-# Section 2: Global Profit/Loss Value
+# Section 3: Global Profit/Loss Value
 # --------------------------------
 st.subheader("Active Campaign Profit Value")
 profit_loss_value = st.number_input(
@@ -71,7 +165,7 @@ if st.button("Submit"):
             # Log event
             log_action(
                 st.session_state.user.user.id,
-                "update_global_threshold",
+                "Snap_update_global_threshold",
                 {"Overall_value": -abs(profit_loss_value)}
             )
         else:
@@ -81,7 +175,7 @@ if st.button("Submit"):
     st.rerun()
 
 # --------------------------------
-# Section 3: Add new campaign condition
+# Section 4: Add new campaign condition
 # --------------------------------
 st.subheader("➕ Add New Individual Campaign Condition")
 campaign_id = st.text_input("Enter Campaign Name")
@@ -102,7 +196,7 @@ if st.button("Add Campaign Condition"):
                 # Log event
                 log_action(
                     st.session_state.user.user.id,
-                    "add_campaign",
+                    "Snap_add_campaign",
                     {"campaign": campaign_id, "value": -abs(camp_value)}
                 )
         except Exception as e:
@@ -110,19 +204,51 @@ if st.button("Add Campaign Condition"):
     st.rerun()
 
 # --------------------------------
-# Section 4: List existing campaigns
+# Section 5: List existing campaigns
 # --------------------------------
+
 st.subheader("📋 Individual Campaign Conditions")
+
 if len(st.session_state["campaign_conditions"]) == 0:
     st.info("No campaign conditions added yet.")
 else:
     for idx, camp in enumerate(st.session_state["campaign_conditions"]):
-        col1, col2, col3 = st.columns([2, 1, 1])
-        with col1:
-            st.write(f"**{camp['id']}**")
-        with col2:
-            st.write(f"Profit/Loss: `{camp['value']}`")
-        with col3:
+        # Create the drawer using st.expander
+        with st.expander(f"Campaign: {camp['id']}", expanded=False):
+            # Display current profit/loss
+            st.write(f"**Current Profit/Loss Value:** `{camp['value']}`")
+
+            # --- Edit Campaign Profit/Loss ---
+            new_value = st.number_input(
+                "Edit Profit/Loss Value",
+                value=camp['value'],
+                step=1,
+                format="%d",
+                key=f"edit_value_{idx}"
+            )
+            if st.button(f"💾 Update {camp['id']}", key=f"update_{idx}"):
+                try:
+                    payload = {"campaign": camp["id"], "threshold": new_value}
+                    resp = requests.post(f"{API_BASE_URL}/config/campaigns?platform=snap", json=payload)
+                    if resp.status_code == 200:
+                        updated_config = resp.json()
+                        st.session_state["campaign_conditions"] = [
+                            {"id": k, "value": v} for k, v in updated_config.get("campaign_loss_thresholds", {}).items()
+                        ]
+                        st.success(f"✅ Updated `{camp['id']}` to {new_value}")
+                        # Log event
+                        log_action(
+                            st.session_state.user.user.id,
+                            "Snap_update_campaign",
+                            {"campaign": camp["id"], "value": new_value}
+                        )
+                    else:
+                        st.error(f"❌ API Error: {resp.text}")
+                except Exception as e:
+                    st.error(f"❌ Request failed: {e}")
+                st.rerun()
+
+            # --- Delete Campaign ---
             if st.button(f"❌ Delete {camp['id']}", key=f"delete_{idx}"):
                 try:
                     payload = {"campaign": camp["id"]}
@@ -136,9 +262,11 @@ else:
                         # Log event
                         log_action(
                             st.session_state.user.user.id,
-                            "delete_campaign",
+                            "Snap_delete_campaign",
                             {"campaign": camp["id"]}
                         )
+                    else:
+                        st.error(f"❌ API Error: {resp.text}")
                 except Exception as e:
                     st.error(f"❌ Request failed: {e}")
                 st.rerun()
